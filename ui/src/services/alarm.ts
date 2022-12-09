@@ -96,6 +96,8 @@ export interface AlarmInfoType extends AlarmType, TimeBaseType {
 
 export interface AlarmRequest {
   alarmName: string;
+  service: string;
+  mobiles: string;
   type: number;
   filters: AlarmFilterType[];
   channelIds: number[];
