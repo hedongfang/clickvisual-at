@@ -50,9 +50,14 @@ func Create(c *core.Context) {
 	for _, f := range req.Filters {
 		tableIds = append(tableIds, f.Tid)
 	}
+
+	mobileList := strings.Split(req.Mobiles, ",")
+
 	obj := &db.Alarm{
 		Uuid:       uuid.NewString(),
 		Name:       req.Name,
+		Service:    req.Service,
+		Mobiles:    mobileList,
 		Desc:       req.Desc,
 		Interval:   req.Interval,
 		Unit:       req.Unit,
