@@ -31,10 +31,12 @@ const prometheusRuleTemplate = `groups:
     expr: %s
     for: %s
     labels:
+      service: %s
       severity: warning
     annotations:
       summary: "告警 {{ $labels.name }}"
-      description: "{{ $labels.desc }}  (当前值: {{ $value }})"`
+      description: "{{ $labels.desc }}  (当前值: {{ $value }})"
+      mobiles: %s`
 
 const (
 	reloadTimes    = 30
@@ -182,7 +184,12 @@ func (i *alert) PrometheusReload(prometheusTarget string) (err error) {
 }
 
 func (i *alert) PrometheusRuleGen(obj *db.Alarm, exp string, filterId int) string {
-	return fmt.Sprintf(prometheusRuleTemplate, obj.UniqueName(filterId), exp, obj.AlertInterval())
+	var atMobileString string
+	for _, mobile := range obj.Mobiles {
+		atMobileString += fmt.Sprintf("@%s ", mobile)
+	}
+	return fmt.Sprintf(prometheusRuleTemplate, obj.UniqueName(filterId), exp, obj.AlertInterval(),
+		obj.Service, atMobileString)
 }
 
 func (i *alert) PrometheusRuleCreateOrUpdate(instance db.BaseInstance, groupName, ruleName, content string) (err error) {
@@ -495,6 +502,8 @@ func (i *alert) Update(uid, alarmId int, req view.ReqAlarmCreate) (err error) {
 	tx := invoker.Db.Begin()
 	ups := make(map[string]interface{}, 0)
 	ups["name"] = req.Name
+	ups["service"] = req.Service
+	ups["mobiles"] = strings.Split(req.Mobiles, ",")
 	ups["desc"] = req.Desc
 	ups["interval"] = req.Interval
 	ups["unit"] = req.Unit
