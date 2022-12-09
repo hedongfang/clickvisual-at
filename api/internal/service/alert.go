@@ -36,7 +36,7 @@ const prometheusRuleTemplate = `groups:
     annotations:
       summary: "告警 {{ $labels.name }}"
       description: "{{ $labels.desc }}  (当前值: {{ $value }})"
-      mobiles: %s`
+      mobiles: "%s"`
 
 const (
 	reloadTimes    = 30
@@ -188,6 +188,8 @@ func (i *alert) PrometheusRuleGen(obj *db.Alarm, exp string, filterId int) strin
 	for _, mobile := range obj.Mobiles {
 		atMobileString += fmt.Sprintf("@%s ", mobile)
 	}
+	atMobileString = strings.TrimSuffix(atMobileString, " ")
+
 	return fmt.Sprintf(prometheusRuleTemplate, obj.UniqueName(filterId), exp, obj.AlertInterval(),
 		obj.Service, atMobileString)
 }
