@@ -51,13 +51,11 @@ func Create(c *core.Context) {
 		tableIds = append(tableIds, f.Tid)
 	}
 
-	mobileList := strings.Split(req.Mobiles, ",")
-
 	obj := &db.Alarm{
 		Uuid:       uuid.NewString(),
 		Name:       req.Name,
 		Service:    req.Service,
-		Mobiles:    mobileList,
+		Mobiles:    req.Mobiles,
 		Desc:       req.Desc,
 		Interval:   req.Interval,
 		Unit:       req.Unit,

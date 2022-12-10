@@ -184,11 +184,18 @@ func (i *alert) PrometheusReload(prometheusTarget string) (err error) {
 }
 
 func (i *alert) PrometheusRuleGen(obj *db.Alarm, exp string, filterId int) string {
-	var atMobileString string
-	for _, mobile := range obj.Mobiles {
-		atMobileString += fmt.Sprintf("@%s ", mobile)
+	var (
+		mobileList     []string
+		atMobileList   []string
+		atMobileString string
+	)
+	// 数据库存储的格式是以"，"分割的手机号: 186xxxxxxxx,138xxxxxxxx
+	// 先转换为数组，然后组合成为
+	mobileList = strings.Split(obj.Mobiles, ",")
+	for _, mobile := range mobileList {
+		atMobileList = append(atMobileList, fmt.Sprintf("@%s", mobile))
 	}
-	atMobileString = strings.TrimSuffix(atMobileString, " ")
+	atMobileString = strings.Join(atMobileList, " ")
 
 	return fmt.Sprintf(prometheusRuleTemplate, obj.UniqueName(filterId), exp, obj.AlertInterval(),
 		obj.Service, atMobileString)
@@ -505,7 +512,7 @@ func (i *alert) Update(uid, alarmId int, req view.ReqAlarmCreate) (err error) {
 	ups := make(map[string]interface{}, 0)
 	ups["name"] = req.Name
 	ups["service"] = req.Service
-	ups["mobiles"] = strings.Split(req.Mobiles, ",")
+	ups["mobiles"] = req.Mobiles
 	ups["desc"] = req.Desc
 	ups["interval"] = req.Interval
 	ups["unit"] = req.Unit
