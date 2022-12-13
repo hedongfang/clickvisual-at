@@ -113,13 +113,8 @@ type Alarm struct {
 	Uid        int           `gorm:"column:uid;type:int(11)" json:"uid"`                              // uid of alarm operator
 	Uuid       string        `gorm:"column:uuid;type:varchar(128);NOT NULL" json:"uuid"`              // foreign key
 	Name       string        `gorm:"column:name;type:varchar(128);NOT NULL" json:"alarmName"`         // name of an alarm
-<<<<<<< HEAD
-	Service    string        `gorm:"column:service;type:varchar(128);" json:"service"`                // service name
-	Mobiles    string        `gorm:"column:mobiles;type:varchar(1024)" json:"mobiles"`                // list of alarm user mobile
-=======
 	Service    string        `gorm:"column:service;type:varchar(238);" json:"service"`                // service name
 	Mobiles    []string      `gorm:"column:mobiles;type:json" json:"mobiles"`                         // list of alarm user mobile
->>>>>>> 37ec1d7... 后端接口支持添加告警服务和告警人手机号列表
 	Desc       string        `gorm:"column:desc;type:varchar(255);NOT NULL" json:"desc"`              // description
 	Interval   int           `gorm:"column:interval;type:int(11)" json:"interval"`                    // interval second between alarm
 	Unit       int           `gorm:"column:unit;type:int(11)" json:"unit"`                            // 0 m 1 s 2 h 3 d 4 w 5 y
