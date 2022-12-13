@@ -51,11 +51,20 @@ func Create(c *core.Context) {
 		tableIds = append(tableIds, f.Tid)
 	}
 
+<<<<<<< HEAD
+=======
+	mobileList := strings.Split(req.Mobiles, ",")
+
+>>>>>>> 37ec1d7... 后端接口支持添加告警服务和告警人手机号列表
 	obj := &db.Alarm{
 		Uuid:       uuid.NewString(),
 		Name:       req.Name,
 		Service:    req.Service,
+<<<<<<< HEAD
 		Mobiles:    req.Mobiles,
+=======
+		Mobiles:    mobileList,
+>>>>>>> 37ec1d7... 后端接口支持添加告警服务和告警人手机号列表
 		Desc:       req.Desc,
 		Interval:   req.Interval,
 		Unit:       req.Unit,
