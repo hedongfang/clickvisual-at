@@ -128,6 +128,13 @@ type (
 		At       *At       `json:"at"`
 		Markdown *Markdown `json:"markdown"`
 	}
+
+    DingTalkText struct {
+        MsgType  string    `json:"msgtype"`
+        At       *At       `json:"at"`
+        Text     *Text     `json:"text"`
+    }
+
 	WeComMarkdown struct {
 		MsgType       string         `json:"msgtype"`
 		MentionedList *MentionedList `json:"mentionedList"`
@@ -143,4 +150,8 @@ type (
 		Title string `json:"title"`
 		Text  string `json:"text"`
 	}
+
+    Text struct {
+        Content string `json:"content"`
+    }
 )
