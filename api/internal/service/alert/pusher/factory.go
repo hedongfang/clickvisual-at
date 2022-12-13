@@ -74,9 +74,21 @@ func BuildAlarmMsg(notification db.Notification, table *db.BaseTable, alarm *db.
 		} else {
 			buffer.WriteString("【告警状态】: 告警中\n")
 		}
+<<<<<<< HEAD
+<<<<<<< HEAD
+		buffer.WriteString(fmt.Sprintf("##### 创建人 ：%s @%s \n", user.Username, user.Nickname))
+		buffer.WriteString(fmt.Sprintf("##### %s\n\n", annotations["description"]))
+		buffer.WriteString(fmt.Sprintf("##### clickvisual 跳转: %s/alarm/rules/history?id=%d&filterId=%d&start=%d&end=%d\n\n",
+=======
 		buffer.WriteString(fmt.Sprintf("【告警规则】: 创建人(%s),昵称(%s)\n", user.Username, user.Nickname))
 		buffer.WriteString(fmt.Sprintf("【触发条件】: %s\n", annotations["description"]))
 		buffer.WriteString(fmt.Sprintf("【链接跳转】: %s/alarm/rules/history?id=%d&filterId=%d&start=%d&end=%d\n",
+>>>>>>> 0a0515e... 钉钉at某人
+=======
+		buffer.WriteString(fmt.Sprintf("【告警规则】: 创建人(%s),昵称(%s)\n", user.Username, user.Nickname))
+		buffer.WriteString(fmt.Sprintf("【触发条件】: %s\n", annotations["description"]))
+		buffer.WriteString(fmt.Sprintf("【链接跳转】: %s/alarm/rules/history?id=%d&filterId=%d&start=%d&end=%d\n",
+>>>>>>> 0a0515e88a0bac94491e77513bce864089275d91
 			strings.TrimRight(econf.GetString("app.rootURL"), "/"), alarm.ID, filter.ID, start, end,
 		))
 		if partialLog != "" {

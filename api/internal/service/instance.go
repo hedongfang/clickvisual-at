@@ -49,6 +49,18 @@ func NewInstanceManager() *instanceManager {
 				continue
 			}
 			m.dss.Store(ds.DsKey(), ch)
+		case db.DatasourceDatabend:
+			databendDb, err := DatabendLink(ds.Dsn)
+			if err != nil {
+				core.LoggerError("Databend", "link", err)
+				continue
+			}
+			dd, err := inquiry.NewDatabend(databendDb, ds)
+			if err != nil {
+				core.LoggerError("Databend", "new", err)
+				continue
+			}
+			m.dss.Store(ds.DsKey(), dd)
 		}
 	}
 	return m
@@ -72,6 +84,16 @@ func (i *instanceManager) Add(obj *db.BaseInstance) error {
 			return err
 		}
 		i.dss.Store(obj.DsKey(), ch)
+	case db.DatasourceDatabend:
+		databendDb, err := DatabendLink(obj.Dsn)
+		if err != nil {
+			return err
+		}
+		dd, err := inquiry.NewDatabend(databendDb, obj)
+		if err != nil {
+			return err
+		}
+		i.dss.Store(obj.DsKey(), dd)
 	}
 	return nil
 }
@@ -95,6 +117,8 @@ func (i *instanceManager) Load(id int) (inquiry.Operator, error) {
 	switch instance.Datasource {
 	case db.DatasourceClickHouse:
 		return obj.(*inquiry.ClickHouse), nil
+	case db.DatasourceDatabend:
+		return obj.(*inquiry.Databend), nil
 	}
 	return nil, errors.Wrapf(constx.ErrInstanceObj, "instance id: %d", id)
 }
@@ -179,16 +203,27 @@ func ClickHouseLink(dsn string) (conn *sql.DB, err error) {
 	return
 }
 
+func DatabendLink(dsn string) (conn *sql.DB, err error) {
+	conn, err = sql.Open("databend", dsn)
+	if err != nil {
+		return nil, errors.Wrap(err, "sql.Open")
+	}
+
+	if err = conn.Ping(); err != nil {
+		return nil, errors.Wrap(err, "databend link")
+	}
+	return
+}
+
 func InstanceCreate(req view.ReqCreateInstance) (obj db.BaseInstance, err error) {
 	conds := egorm.Conds{}
 	conds["datasource"] = req.Datasource
 	conds["name"] = req.Name
 	checks, err := db.InstanceList(conds)
 	if err != nil {
-		err = errors.Wrap(err, "create DB failed 01: ")
+		err = errors.Wrapf(err, "req: %v", req)
 		return
 	}
-	elog.Debug("InstanceCreate", elog.Any("checks", checks))
 	if len(checks) > 0 {
 		err = errors.New("data source configuration with duplicate name")
 		return
@@ -212,26 +247,25 @@ func InstanceCreate(req view.ReqCreateInstance) (obj db.BaseInstance, err error)
 		Mode:             req.Mode,
 		Clusters:         req.Clusters,
 	}
-	elog.Debug("instanceCreate", elog.Any("obj", obj))
 	if req.PrometheusTarget != "" {
 		if err = Alert.PrometheusReload(req.PrometheusTarget); err != nil {
-			err = errors.Wrap(err, "create DB failed 02:")
+			err = errors.Wrapf(err, "prometheus target: %s", req.PrometheusTarget)
 			return
 		}
 	}
 	tx := invoker.Db.Begin()
 	if err = db.InstanceCreate(tx, &obj); err != nil {
 		tx.Rollback()
-		err = errors.Wrap(err, "create DB failed 03: ")
+		err = errors.Wrapf(err, "instance: %v", obj)
 		return
 	}
 	if err = InstanceManager.Add(&obj); err != nil {
 		tx.Rollback()
-		err = errors.Wrap(err, "DNS configuration exception, database connection failure 01: ")
+		err = errors.Wrapf(err, "instance: %v", obj)
 		return
 	}
 	if err = tx.Commit().Error; err != nil {
-		err = errors.Wrap(err, "DNS configuration exception, database connection failure 02: ")
+		err = errors.Wrap(err, "DNS configuration exception, database connection failure 02")
 		return
 	}
 	return obj, nil
